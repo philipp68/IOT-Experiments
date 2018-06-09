@@ -9,6 +9,6 @@ The DS 1307 is a handy RTC circuit that offers an I2C interface. Several librari
 ### Liquid Cristal Display's (LCDs)
 Displays are almost always a part of any microcontroller project or embedded system. Fortunately, there are cheap LCDs available with a wide support for multiple microcontroller devices.
 #### Nokia 5510/3310
-A cheap, popular display is the Nokia 5110/3310 LCD. You might still remember it from the era before smart phones took over the world. These displays are PCD8544-based.
+A cheap, popular display is the Nokia 5110/3310 LCD. You might still remember it from the era before smart phones took over the world. These displays are PCD8544-based. Here the [instructions](https://www.teachmemicro.com/arduino-nokia-3310-lcd-interfacing/) how to wire the LCD to your Arduino.
 * [Adafruit PCD8554-Nokia-5110 LCD Lib](https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library)
 * [Adafruit Core Graphics Library](https://github.com/adafruit/Adafruit-GFX-Library)
