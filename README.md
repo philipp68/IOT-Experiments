@@ -37,4 +37,10 @@ The following commands will keep your installation up-to-date.
 ```
 sudo apt-get update
 sudo apt-get dist-upgrade
+sudo apt-get upgrade (what is the difference to the above)
+```
+#### Activate Camera
+To activate camera start up the configuration and enable camera.
+```
+sudo raspi-config
 ```
