@@ -32,4 +32,9 @@ network={
 ssh pi@raspberrypi.local
 ```
 * To shutdown your Pi, simply type sudo shutdown -h now, or press control and d if you want to disconnect but leave your Pi running.
-* Note that if you have a program running over SSH and you disconnect, then the program will likely stop as soon as you disconnect. The best way round this is to use screen, but we'll save that for another tutorial!
+#### Update your Pi
+The following commands will keep your installation up-to-date.
+```
+sudo apt-get update
+sudo apt-get dist-upgrade
+```
