@@ -21,8 +21,6 @@ class Alarm {
         static void updateMinutes(uint8_t minutes);
         static void updateSeconds(uint8_t seconds);
         static void updateAlarmBrightness(uint8_t brightness);
-        static void updateDefaultDaytimeBrightness(uint8_t brightness);
-        static void updateDefaultNighttimeBrightness(uint8_t brightness);
         static void updateRotaryEncoderForBrightness();
         static void eventHandler(uint8_t event);
         static void storeInEEProm();
@@ -44,8 +42,6 @@ class Alarm {
         static uint8_t _minutes;
         static uint8_t _seconds;
         static uint8_t _state;
-        static uint8_t _defaultDaytimeBrightness;
-        static uint8_t _defaultNighttimeBrightness;
         static uint8_t _alarmBrightness;
 
         static RotaryEncoder* _rotaryEncoderLeft;

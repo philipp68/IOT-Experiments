@@ -32,12 +32,13 @@ void setup() {
 
   PixelDisplay::setup();
 
+  Alarm::retrieveFromEEProm();
   Alarm::setRotaryEncoderLeft(&reLeft);
   Alarm::setRotaryEncoderRight(&reRight);
   Alarm::updateRotaryEncoderForBrightness();
   Alarm::setMelody(&melody);
   Alarm::setAnimation(&backgroundAnimation);
-  Alarm::retrieveFromEEProm();
+
   
 }
 

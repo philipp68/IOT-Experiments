@@ -11,8 +11,6 @@ uint8_t Alarm::_hours = 0;
 uint8_t Alarm::_minutes = 0;
 uint8_t Alarm::_seconds = 0;
 uint8_t Alarm::_state = STATE_NORMAL;
-uint8_t Alarm::_defaultDaytimeBrightness = 50;
-uint8_t Alarm::_defaultNighttimeBrightness = 5;
 uint8_t Alarm::_alarmBrightness = 50;
 RotaryEncoder* Alarm::_rotaryEncoderLeft = NULL;
 RotaryEncoder* Alarm::_rotaryEncoderRight = NULL;
@@ -27,7 +25,6 @@ static void Alarm::eventHandler(uint8_t event) {
         _state = STATE_ARMED;
         _alarmSnoozeTime = 0;
         _animation->startOver();
-        _animation->setAnimationState(BackgroundAnimation::STATE_EYES_CLOSED);
         // initialize rotary encoder with values for brightness adjustments
         updateRotaryEncoderForBrightness(); 
         storeInEEProm();
@@ -102,12 +99,10 @@ static void Alarm::rotatedLeft(int value) {
     updateForeground();
     return;
   } else if (_state == STATE_ARMED) {
-    _defaultNighttimeBrightness = value;
-    updateDefaultNighttimeBrightness(value);
+    updateAlarmBrightness(value);
     return;
   } else if (_state == STATE_NORMAL) {
-    _defaultDaytimeBrightness = value;
-    updateDefaultDaytimeBrightness(value);
+    updateAlarmBrightness(value);
     return;
   } else if (_state == STATE_ALARM_SNOOZED) {
     // do nothing
@@ -137,11 +132,10 @@ static void Alarm::rotatedRight(int value) {
     updateForeground();
     return;
   } else if (_state == STATE_ARMED) {
-    _defaultNighttimeBrightness = value;
-    updateDefaultNighttimeBrightness(value);
+    updateAlarmBrightness(value);
     return;
   } else if (_state == STATE_NORMAL) {
-    // do nothing
+    updateAlarmBrightness(value);
     return;
   } else if (_state == STATE_ALARM_SNOOZED) {
     // do nothing
@@ -176,13 +170,6 @@ static void Alarm::updateSeconds(uint8_t seconds) {
   _seconds = seconds;
 }
 
-static void Alarm::updateDefaultDaytimeBrightness(uint8_t brightness) {
-  //Serial.println("updateDefaultDaytimeBrightness: " + String(brightness));
-  PixelDisplay::setBrightness(brightness);
-  _defaultDaytimeBrightness = brightness;
-  PixelDisplay::show();
-}
-
 static void Alarm::updateAlarmBrightness(uint8_t brightness) {
   //Serial.println("updateAlarmBrightness: " + String(brightness));
   PixelDisplay::setBrightness(brightness);
@@ -190,26 +177,20 @@ static void Alarm::updateAlarmBrightness(uint8_t brightness) {
   PixelDisplay::show();
 } 
 
-static void Alarm::updateDefaultNighttimeBrightness(uint8_t brightness) {
-  //Serial.println("updateDefaultNighttimeBrightness: " + String(brightness));
-  PixelDisplay::setBrightness(brightness);
-  _defaultNighttimeBrightness = brightness;
-  PixelDisplay::show();
-}
-
 static void Alarm::updateRotaryEncoderForBrightness() {
   if(_rotaryEncoderLeft != NULL) {
-    if(_state == STATE_NORMAL) {
-      _rotaryEncoderLeft->setInitial(_defaultDaytimeBrightness);
-    } else if(_state == STATE_ARMED) {
-      _rotaryEncoderLeft->setInitial(_defaultNighttimeBrightness);
-    } else if(_state == STATE_SET_ALARM) {
-      _rotaryEncoderLeft->setInitial(_defaultDaytimeBrightness);
-    }
+    _rotaryEncoderLeft->setInitial(_alarmBrightness);
     _rotaryEncoderLeft->setMax(200);
     _rotaryEncoderLeft->setMin(0);
     _rotaryEncoderLeft->setStepSize(1);
     _rotaryEncoderLeft->startOver(false);
+  }
+  if(_rotaryEncoderRight != NULL) {
+    _rotaryEncoderRight->setInitial(_alarmBrightness);
+    _rotaryEncoderRight->setMax(200);
+    _rotaryEncoderRight->setMin(0);
+    _rotaryEncoderRight->setStepSize(1);
+    _rotaryEncoderRight->startOver(false);
   }
 }
 
@@ -227,12 +208,9 @@ static void Alarm::updateForeground() {
   //Serial.println("****** Alarm ******");
   //Serial.println("State               : " + String(_state));
   //Serial.println("Snoozing for        : " + String(_alarmSnoozeTime));
-  //Serial.println("Daytime Brightness  : " + String(_defaultDaytimeBrightness));
-  //Serial.println("Nighttime Brightness: " + String(_defaultNighttimeBrightness));
-  if(_state == STATE_NORMAL) {
+  //Serial.println("Alarm Brightness  : " + String(_alarmBrightness));
+  if((_state == STATE_NORMAL)||(_state == STATE_ARMED)||(_state == STATE_ALARM_ON)) {
     displayTime(_hours, _minutes, 0x55513a, 0xfee761);
-  } else if(_state == STATE_ARMED) {
-    displayTime(_hours, _minutes, 0x887d3e, 0x55513a);
   } else if(_state == STATE_SET_ALARM) {
     displayTime(_alarmHours, _alarmMinutes, CRGB::Red, 0xfee761);
   }
@@ -242,9 +220,9 @@ static void Alarm::updateForeground() {
 
 static void Alarm::updateViewBrightness() {
   if((_state == STATE_NORMAL )||(_state == STATE_SET_ALARM)||(_state == STATE_ALARM_ON)) {
-    PixelDisplay::setBrightness(_defaultDaytimeBrightness);
+    PixelDisplay::setBrightness(_alarmBrightness);
   } else if((_state == STATE_ARMED)||(_state == STATE_ALARM_SNOOZED)) {
-    PixelDisplay::setBrightness(_defaultNighttimeBrightness);
+    PixelDisplay::setBrightness(_alarmBrightness);
   } else if(_state == STATE_ALARM_IMMINENT) {
       if(_seconds != 0) {
         int brightness;
@@ -260,7 +238,12 @@ static void Alarm::displayTime(int hours, int minutes, CRGB foregroundColor, CRG
   int secondDigitHours = hours - firstDigitHours*10;
   PixelDisplay::printSingleDigit(1,11,firstDigitHours,foregroundColor, backgroundColor, true);
   PixelDisplay::printSingleDigit(5,11,secondDigitHours,foregroundColor, backgroundColor, true);
-  PixelDisplay::printColon(7,11,foregroundColor,backgroundColor);
+  if((_state == STATE_ARMED)||(_state == STATE_ALARM_SNOOZED)) {
+    PixelDisplay::printColon(7,11,CRGB::Red,backgroundColor);
+  } else {
+    PixelDisplay::printColon(7,11,foregroundColor,backgroundColor);
+  }
+  
   
   int firstDigitMinutes = minutes/10;
   int secondDigitMinutes = minutes - firstDigitMinutes*10;         
@@ -271,19 +254,17 @@ static void Alarm::displayTime(int hours, int minutes, CRGB foregroundColor, CRG
 
 static void Alarm::storeInEEProm() {
   // check if values fit into a byte
-  if(_alarmHours <= 23 && _alarmMinutes <=59 && _defaultDaytimeBrightness <= 220) {
+  if(_alarmHours <= 23 && _alarmMinutes <=59 && _alarmBrightness <= 220) {
     EEPROM.update(0, _alarmHours);
     EEPROM.update(1, _alarmMinutes);
-    EEPROM.update(2, _defaultDaytimeBrightness);
-    EEPROM.update(3, _defaultNighttimeBrightness);
+    EEPROM.update(2, _alarmBrightness);
   }
 }
 
 static void Alarm::retrieveFromEEProm() {
   _alarmHours = EEPROM.read(0);
   _alarmMinutes = EEPROM.read(1);
-  _defaultDaytimeBrightness = EEPROM.read(2);
-  _defaultNighttimeBrightness = EEPROM.read(3);
+  _alarmBrightness = EEPROM.read(2);
 }
 
 static void Alarm::check() {
@@ -293,26 +274,18 @@ static void Alarm::check() {
   // go back to sleep...
   if(_state == STATE_ALARM_SNOOZED) {
     _animation->startOver();
-    _animation->setAnimationState(BackgroundAnimation::STATE_EYES_CLOSED);
+    //_animation->setAnimationState(BackgroundAnimation::STATE_EYES_CLOSED);
     _state = STATE_ARMED;
   }
 
-  // get ready to wake up...
-  uint8_t slowWakeUpInMinutes = 1;
-  if(((timeInMinutes >= (alarmInMinutes - slowWakeUpInMinutes)) && (timeInMinutes <= alarmInMinutes)) && (_state == STATE_ARMED)) {
-    _state = STATE_ALARM_IMMINENT;
-    _animation->setAnimationState(BackgroundAnimation::JUMPING_JHONNY);
-  }
-
   // time to wake up..
-  if((timeInMinutes == alarmInMinutes) && (_state == STATE_ALARM_IMMINENT)) {
+  if(timeInMinutes == alarmInMinutes) {
     _state = STATE_ALARM_ON;
   }
   
   // sound the alarm
   if(Alarm::_state == STATE_ALARM_ON) {
     _melody->sound();
-    _animation->setAnimationState(BackgroundAnimation::JUMPING_JHONNY);
   }
 }
 

@@ -19,7 +19,7 @@ class RealTimeClock {
 
         void begin() {
           _rtc.begin();
- 
+          
           if (! _rtc.isrunning()) {
             Serial.println("RTC is NOT running!");
             // following line sets the RTC to the date & time this sketch was compiled
