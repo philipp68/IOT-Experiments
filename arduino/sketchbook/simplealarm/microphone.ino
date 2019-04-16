@@ -8,7 +8,7 @@ bool clapDetected()
   // analog input
   noiseLevel = analogRead(analogMicInput);
 
-  if(noiseLevel >= 518)
+  if(noiseLevel >= 522)
   {
     Serial.println (noiseLevel, DEC);
     return true;

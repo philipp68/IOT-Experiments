@@ -83,7 +83,7 @@ void setup()
   stopSong();
   
   // run once to set time
-  //rtc.adjust(DateTime(2018,5,12,17,13));
+  //rtc.adjust(DateTime(2018, 10, 28, 17, 41, 0));
 }
 
 void loop()

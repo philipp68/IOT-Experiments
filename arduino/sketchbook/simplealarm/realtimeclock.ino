@@ -11,10 +11,7 @@ void rtcSetup()
     // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // This line sets the RTC with an explicit date & time, for example to set
     // January 21, 2014 at 3am you would call:
-    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+    //rtc.adjust(DateTime(2018, 9, 29, 18, 17, 0));
   }
   Serial.println("RTC is running");
 }
-
-// Call rtc.adjust to adjust time 
-//rtc.adjust(DateTime(2018,5,5,11,21));
